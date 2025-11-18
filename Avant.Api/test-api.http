@@ -1,0 +1,58 @@
+### Teste da API Mottu
+### Execute estes comandos no VS Code com a extensão REST Client
+
+@baseUrl = http://localhost:5000
+@contentType = application/json
+
+### 1. Testar login
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "joao.silva@mottu.com",
+  "senha": "123456"
+}
+
+### 2. Listar pátios
+GET {{baseUrl}}/api/patios
+
+### 3. Listar funcionários
+GET {{baseUrl}}/api/funcionarios
+
+### 4. Criar novo funcionário
+POST {{baseUrl}}/api/funcionarios
+Content-Type: {{contentType}}
+
+{
+  "nome": "Novo Funcionário",
+  "email": "novo@mottu.com",
+  "senha": "123456",
+  "patioId": 1
+}
+
+### 5. Obter funcionário por ID
+GET {{baseUrl}}/api/funcionarios/1
+
+### 6. Listar gerentes
+GET {{baseUrl}}/api/gerentes
+
+### 7. Criar novo pátio
+POST {{baseUrl}}/api/patios
+Content-Type: {{contentType}}
+
+{
+  "nome": "Pátio Teste",
+  "endereco": "Rua Teste, 123"
+}
+
+### 8. Testar paginação
+GET {{baseUrl}}/api/funcionarios?page=1&pageSize=2
+
+### 9. Testar login com credenciais inválidas
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "email@inexistente.com",
+  "senha": "senhaerrada"
+}

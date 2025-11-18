@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - API Mottu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .credentials-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .credentials-box h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .credentials-box h3::before {
+            content: "🔑";
+            margin-right: 8px;
+        }
+
+        .credential-item {
+            background: white;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .credential-item strong {
+            color: #667eea;
+        }
+
+        .use-credential-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .use-credential-btn:hover {
+            background: #5568d3;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        /* Error Console */
+        .error-console {
+            margin-top: 15px;
+            background: #2c3e50;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-console-header {
+            background: #1a252f;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .error-console-header:hover {
+            background: #243447;
+        }
+
+        .error-console-title {
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .error-console-toggle {
+            color: #95a5a6;
+            font-size: 12px;
+        }
+
+        .error-console-body {
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .error-console-body.expanded {
+            display: block;
+        }
+
+        .error-item {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .error-item:last-child {
+            border-bottom: none;
+        }
+
+        .error-type {
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .error-message {
+            color: #ecf0f1;
+            font-size: 13px;
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
+
+        .error-details {
+            color: #95a5a6;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .error-timestamp {
+            color: #7f8c8d;
+            font-size: 10px;
+            margin-top: 5px;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .back-link a:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Database Error Badge */
+        .db-error-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🏍️ Login - API Mottu</h1>
+            <p>Entre com suas credenciais para acessar o sistema</p>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Error Console -->
+        <div id="errorConsole" class="error-console">
+            <div class="error-console-header" onclick="toggleErrorConsole()">
+                <div class="error-console-title">
+                    <span>⚠️</span>
+                    <span>Console de Erros</span>
+                    <span id="errorCount" class="db-error-badge" style="display: none;">0</span>
+                </div>
+                <div class="error-console-toggle">▼ Expandir</div>
+            </div>
+            <div id="errorConsoleBody" class="error-console-body">
+                <!-- Errors will be inserted here -->
+            </div>
+        </div>
+
+        <div class="credentials-box">
+            <h3>Credenciais de Teste</h3>
+            <div class="credential-item">
+                <div>
+                    <strong>Email:</strong> joao.silva@mottu.com<br>
+                    <strong>Senha:</strong> 123456
+                </div>
+                <button class="use-credential-btn" onclick="useCredentials('joao.silva@mottu.com', '123456')">
+                    Usar
+                </button>
+            </div>
+            <div class="credential-item">
+                <div>
+                    <strong>Email:</strong> maria.santos@mottu.com<br>
+                    <strong>Senha:</strong> 123456
+                </div>
+                <button class="use-credential-btn" onclick="useCredentials('maria.santos@mottu.com', '123456')">
+                    Usar
+                </button>
+            </div>
+            <div class="credential-item">
+                <div>
+                    <strong>Email:</strong> pedro.costa@mottu.com<br>
+                    <strong>Senha:</strong> 123456
+                </div>
+                <button class="use-credential-btn" onclick="useCredentials('pedro.costa@mottu.com', '123456')">
+                    Usar
+                </button>
+            </div>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="seu.email@mottu.com">
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" required placeholder="Digite sua senha">
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                Entrar
+            </button>
+        </form>
+
+        <div class="back-link">
+            <a href="/">← Voltar para página inicial</a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+        let errorCount = 0;
+
+        // Database error patterns
+        const DB_ERRORS = {
+            'ORA-02391': {
+                type: 'Limite de Sessões Oracle',
+                message: '❌ Limite de sessões simultâneas do banco de dados foi atingido. O Oracle está com muitas conexões abertas.',
+                solution: 'Aguarde alguns instantes e tente novamente, ou contate o administrador do sistema.'
+            },
+            'ORA-00020': {
+                type: 'Limite de Processos Oracle',
+                message: '❌ Número máximo de processos do Oracle foi excedido. O banco de dados está sobrecarregado.',
+                solution: 'Aguarde alguns minutos para que processos sejam finalizados.'
+            },
+            'ORA-12519': {
+                type: 'Limite de Conexões TNS',
+                message: '❌ Limite de conexões do TNS Listener foi atingido. Não é possível criar novas conexões.',
+                solution: 'O banco de dados precisa liberar conexões. Tente novamente em alguns instantes.'
+            },
+            'ORA-28000': {
+                type: 'Conta Bloqueada',
+                message: '❌ Sua conta de banco de dados está bloqueada devido a múltiplas tentativas de login incorretas.',
+                solution: 'Entre em contato com o administrador para desbloquear sua conta.'
+            },
+            'ORA-01017': {
+                type: 'Credenciais Inválidas',
+                message: '❌ Usuário ou senha do banco de dados incorretos.',
+                solution: 'Verifique as configurações de conexão do sistema.'
+            },
+            'ORA-12170': {
+                type: 'Timeout de Conexão',
+                message: '❌ Tempo limite de conexão com o banco de dados foi excedido.',
+                solution: 'Verifique a conectividade de rede ou tente novamente.'
+            },
+            'ORA-12541': {
+                type: 'Listener Não Disponível',
+                message: '❌ O Oracle Listener não está respondendo. Serviço de banco de dados pode estar offline.',
+                solution: 'Contate o administrador do sistema imediatamente.'
+            }
+        };
+
+        function useCredentials(email, senha) {
+            document.getElementById('email').value = email;
+            document.getElementById('senha').value = senha;
+            showAlert('Credenciais preenchidas! Clique em "Entrar" para fazer login.', 'success');
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerHTML = message;
+            alertBox.className = 'alert alert-' + type;
+            alertBox.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    alertBox.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function toggleErrorConsole() {
+            const body = document.getElementById('errorConsoleBody');
+            const toggle = document.querySelector('.error-console-toggle');
+
+            if (body.classList.contains('expanded')) {
+                body.classList.remove('expanded');
+                toggle.textContent = '▼ Expandir';
+            } else {
+                body.classList.add('expanded');
+                toggle.textContent = '▲ Ocultar';
+            }
+        }
+
+        function logError(errorType, errorMessage, technicalDetails, statusCode = null) {
+            errorCount++;
+
+            const errorConsole = document.getElementById('errorConsole');
+            const errorConsoleBody = document.getElementById('errorConsoleBody');
+            const errorCountBadge = document.getElementById('errorCount');
+
+            errorConsole.style.display = 'block';
+            errorCountBadge.style.display = 'inline-block';
+            errorCountBadge.textContent = errorCount;
+
+            const timestamp = new Date().toLocaleString('pt-BR');
+
+            const errorItem = document.createElement('div');
+            errorItem.className = 'error-item';
+            errorItem.innerHTML = `
+                <div class="error-type">${errorType}${statusCode ? ` (HTTP ${statusCode})` : ''}</div>
+                <div class="error-message">${errorMessage}</div>
+                ${technicalDetails ? `<div class="error-details">${technicalDetails}</div>` : ''}
+                <div class="error-timestamp">🕐 ${timestamp}</div>
+            `;
+
+            errorConsoleBody.insertBefore(errorItem, errorConsoleBody.firstChild);
+
+            // Auto-expand on first error
+            if (errorCount === 1) {
+                document.getElementById('errorConsoleBody').classList.add('expanded');
+                document.querySelector('.error-console-toggle').textContent = '▲ Ocultar';
+            }
+        }
+
+        function detectDatabaseError(errorText) {
+            for (const [code, error] of Object.entries(DB_ERRORS)) {
+                if (errorText.includes(code)) {
+                    return {
+                        code: code,
+                        type: error.type,
+                        message: error.message,
+                        solution: error.solution
+                    };
+                }
+            }
+            return null;
+        }
+
+        function handleError(error, response = null, data = null) {
+            console.error('Login Error:', error);
+
+            let errorType = 'Erro Desconhecido';
+            let errorMessage = 'Ocorreu um erro inesperado.';
+            let technicalDetails = null;
+            let statusCode = response?.status;
+
+            // Check for database errors
+            const errorText = JSON.stringify(data || error.message || '');
+            const dbError = detectDatabaseError(errorText);
+
+            if (dbError) {
+                errorType = `🗄️ ${dbError.type}`;
+                errorMessage = dbError.message;
+                technicalDetails = `Código Oracle: ${dbError.code}\n\nSolução: ${dbError.solution}`;
+
+                showAlert(
+                    `${dbError.message}<br><br><strong>💡 ${dbError.solution}</strong>`,
+                    'error'
+                );
+            } else if (response) {
+                // HTTP errors
+                switch (response.status) {
+                    case 400:
+                        errorType = '❌ Requisição Inválida';
+                        errorMessage = data?.message || 'Dados enviados são inválidos.';
+                        technicalDetails = JSON.stringify(data, null, 2);
+                        showAlert(errorMessage, 'error');
+                        break;
+                    case 401:
+                        errorType = '🔒 Não Autorizado';
+                        errorMessage = 'Email ou senha incorretos.';
+                        technicalDetails = data?.message || 'Credenciais inválidas.';
+                        showAlert('❌ Email ou senha incorretos. Verifique suas credenciais e tente novamente.', 'error');
+                        break;
+                    case 403:
+                        errorType = '🚫 Acesso Negado';
+                        errorMessage = 'Você não tem permissão para acessar este recurso.';
+                        technicalDetails = JSON.stringify(data, null, 2);
+                        showAlert('❌ Acesso negado. Entre em contato com o administrador.', 'error');
+                        break;
+                    case 404:
+                        errorType = '🔍 Endpoint Não Encontrado';
+                        errorMessage = 'A API não está respondendo ou o endpoint não existe.';
+                        technicalDetails = `URL: ${API_BASE_URL}/api/auth/login`;
+                        showAlert('❌ Servidor não encontrado. Verifique se a API está rodando.', 'error');
+                        break;
+                    case 500:
+                        errorType = '💥 Erro Interno do Servidor';
+                        errorMessage = 'Erro interno no servidor. Pode ser um problema de banco de dados.';
+                        technicalDetails = JSON.stringify(data, null, 2);
+                        showAlert('❌ Erro no servidor. Verifique os logs do servidor ou aguarde alguns instantes.', 'error');
+                        break;
+                    case 502:
+                        errorType = '🌐 Bad Gateway';
+                        errorMessage = 'Gateway não está respondendo corretamente.';
+                        showAlert('❌ Problema de gateway. O servidor pode estar reiniciando.', 'error');
+                        break;
+                    case 503:
+                        errorType = '⚠️ Serviço Indisponível';
+                        errorMessage = 'O servidor está temporariamente indisponível ou em manutenção.';
+                        showAlert('❌ Serviço temporariamente indisponível. Tente novamente em alguns minutos.', 'error');
+                        break;
+                    case 504:
+                        errorType = '⏱️ Gateway Timeout';
+                        errorMessage = 'O servidor demorou muito para responder.';
+                        showAlert('❌ Tempo limite excedido. O servidor pode estar sobrecarregado.', 'error');
+                        break;
+                    default:
+                        errorType = `❓ Erro HTTP ${response.status}`;
+                        errorMessage = data?.message || 'Erro desconhecido do servidor.';
+                        technicalDetails = JSON.stringify(data, null, 2);
+                        showAlert(`❌ Erro ${response.status}: ${errorMessage}`, 'error');
+                }
+            } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                errorType = '🌐 Erro de Rede';
+                errorMessage = 'Não foi possível conectar ao servidor. Verifique se a API está rodando.';
+                technicalDetails = `Erro: ${error.message}\nURL: ${API_BASE_URL}/api/auth/login`;
+                showAlert('❌ Erro de conexão. Verifique se a API está rodando em http://localhost:5008', 'error');
+            } else if (error.name === 'AbortError') {
+                errorType = '⏱️ Timeout';
+                errorMessage = 'A requisição demorou muito tempo e foi cancelada.';
+                showAlert('❌ Tempo limite excedido. Tente novamente.', 'error');
+            } else {
+                errorType = '❌ Erro JavaScript';
+                errorMessage = error.message || 'Erro desconhecido no cliente.';
+                technicalDetails = `${error.name}: ${error.message}\nStack: ${error.stack}`;
+                showAlert('❌ Erro inesperado. Verifique o console de erros abaixo.', 'error');
+            }
+
+            logError(errorType, errorMessage, technicalDetails, statusCode);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Desabilitar botão e mostrar loading
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner"></span>Entrando...';
+
+            try {
+                // Add timeout to fetch
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, senha }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse JSON:', parseError);
+                    data = { message: 'Resposta inválida do servidor' };
+                }
+
+                if (response.ok && data.success) {
+                    // Salvar token no localStorage
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userName', data.funcionario?.nome || 'Usuário');
+
+                    showAlert('✅ Login realizado com sucesso! Redirecionando...', 'success');
+
+                    // Redirecionar para dashboard após 1 segundo
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1000);
+                } else {
+                    handleError(new Error(data.message || 'Login failed'), response, data);
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = 'Entrar';
+                }
+            } catch (error) {
+                handleError(error);
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Entrar';
+            }
+        });
+
+        // Verificar se já está logado
+        if (localStorage.getItem('authToken')) {
+            showAlert('✅ Você já está logado! Redirecionando...', 'success');
+            setTimeout(() => {
+                window.location.href = '/dashboard.html';
+            }, 1500);
+        }
+
+        // Log initial system info
+        console.log('🏍️ API Mottu - Login System');
+        console.log('API URL:', API_BASE_URL);
+        console.log('Timestamp:', new Date().toLocaleString('pt-BR'));
+    </script>
+</body>
+</html>

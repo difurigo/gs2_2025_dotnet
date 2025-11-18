@@ -1,0 +1,60 @@
+@MottuApi_HostAddress = http://localhost:5008
+
+### Testar Swagger
+GET {{MottuApi_HostAddress}}/
+Accept: application/json
+
+###
+
+### GET Patios (lista paginada)
+GET {{MottuApi_HostAddress}}/api/patios?page=1&pageSize=10
+Accept: application/json
+
+###
+
+### POST Patio
+POST {{MottuApi_HostAddress}}/api/patios
+Content-Type: application/json
+
+{
+  "nome": "Pátio Central",
+  "endereco": "Rua Principal, 123"
+}
+
+###
+
+### GET Funcionarios (lista paginada)
+GET {{MottuApi_HostAddress}}/api/funcionarios?page=1&pageSize=10
+Accept: application/json
+
+###
+
+### POST Funcionario
+POST {{MottuApi_HostAddress}}/api/funcionarios
+Content-Type: application/json
+
+{
+  "nome": "João Silva",
+  "email": "joao@mottu.com",
+  "senha": "Senha@123",
+  "patioId": 1
+}
+
+###
+
+### GET Gerentes (lista paginada)
+GET {{MottuApi_HostAddress}}/api/gerentes?page=1&pageSize=10
+Accept: application/json
+
+###
+
+### POST Gerente
+POST {{MottuApi_HostAddress}}/api/gerentes
+Content-Type: application/json
+
+{
+  "funcionarioId": 1,
+  "patioId": 1
+}
+
+###

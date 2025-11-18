@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - API Mottu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .welcome-card h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .welcome-card p {
+            color: #666;
+        }
+
+        /* Error Console */
+        .error-console {
+            background: #2c3e50;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-console-header {
+            background: #1a252f;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .error-console-header:hover {
+            background: #243447;
+        }
+
+        .error-console-title {
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error-count-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .error-console-toggle {
+            color: #95a5a6;
+            font-size: 13px;
+        }
+
+        .error-console-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .error-console-body.expanded {
+            display: block;
+        }
+
+        .error-item {
+            background: #34495e;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .error-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .error-type {
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .error-message {
+            color: #ecf0f1;
+            font-size: 13px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .error-details {
+            color: #95a5a6;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: #1a252f;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+
+        .error-timestamp {
+            color: #7f8c8d;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .clear-errors-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .clear-errors-btn:hover {
+            background: #c0392b;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .api-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .api-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .api-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .api-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .btn-test {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .btn-test:hover {
+            background: #5568d3;
+        }
+
+        .btn-test:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .response-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .response-area pre {
+            margin: 0;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🏍️ Dashboard - API Mottu</h1>
+        <div class="user-info">
+            <span id="userName">Usuário</span>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Error Console -->
+        <div id="errorConsole" class="error-console">
+            <div class="error-console-header" onclick="toggleErrorConsole()">
+                <div class="error-console-title">
+                    <span>⚠️ Console de Erros</span>
+                    <span id="errorCount" class="error-count-badge" style="display: none;">0</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="clear-errors-btn" onclick="clearErrors(event)">Limpar</button>
+                    <div class="error-console-toggle">▼ Expandir</div>
+                </div>
+            </div>
+            <div id="errorConsoleBody" class="error-console-body">
+                <!-- Errors will be inserted here -->
+            </div>
+        </div>
+
+        <div class="welcome-card">
+            <h2>Bem-vindo ao Dashboard!</h2>
+            <p>Você está autenticado e pode acessar todos os endpoints da API. Use os botões abaixo para testar as funcionalidades.</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="api-card">
+                <h3>👥 Funcionários</h3>
+                <p>Listar todos os funcionários cadastrados no sistema</p>
+                <button class="btn-test" onclick="testEndpoint('funcionarios', 'funcionariosResponse')">
+                    Testar Endpoint
+                </button>
+                <div id="funcionariosResponse" class="response-area"></div>
+            </div>
+
+            <div class="api-card">
+                <h3>🏢 Pátios</h3>
+                <p>Listar todos os pátios disponíveis</p>
+                <button class="btn-test" onclick="testEndpoint('patios', 'patiosResponse')">
+                    Testar Endpoint
+                </button>
+                <div id="patiosResponse" class="response-area"></div>
+            </div>
+
+            <div class="api-card">
+                <h3>👔 Gerentes</h3>
+                <p>Listar todos os gerentes do sistema</p>
+                <button class="btn-test" onclick="testEndpoint('gerentes', 'gerentesResponse')">
+                    Testar Endpoint
+                </button>
+                <div id="gerentesResponse" class="response-area"></div>
+            </div>
+
+            <div class="api-card">
+                <h3>📊 Documentação Swagger</h3>
+                <p>Acesse a documentação completa da API</p>
+                <button class="btn-test" onclick="window.open('/swagger', '_blank')">
+                    Abrir Swagger
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+        let errorCount = 0;
+
+        // Database error patterns
+        const DB_ERRORS = {
+            'ORA-02391': { type: 'Limite de Sessões Oracle', message: '❌ Limite de sessões simultâneas atingido. Muitas conexões abertas.', solution: 'Aguarde alguns instantes e tente novamente.' },
+            'ORA-00020': { type: 'Limite de Processos Oracle', message: '❌ Número máximo de processos excedido. Banco sobrecarregado.', solution: 'Aguarde alguns minutos.' },
+            'ORA-12519': { type: 'Limite de Conexões TNS', message: '❌ Limite de conexões TNS atingido.', solution: 'Aguarde liberação de conexões.' },
+            'ORA-28000': { type: 'Conta Bloqueada', message: '❌ Conta do banco de dados bloqueada.', solution: 'Contate o administrador.' },
+            'ORA-01017': { type: 'Credenciais Inválidas', message: '❌ Usuário ou senha do banco incorretos.', solution: 'Verifique as configurações.' },
+            'ORA-12170': { type: 'Timeout de Conexão', message: '❌ Tempo limite de conexão excedido.', solution: 'Verifique a rede.' },
+            'ORA-12541': { type: 'Listener Não Disponível', message: '❌ Oracle Listener não responde.', solution: 'Contate o administrador.' }
+        };
+
+        // Check auth
+        const token = localStorage.getItem('authToken');
+        const userName = localStorage.getItem('userName');
+
+        if (!token) {
+            alert('Você precisa estar logado para acessar esta página!');
+            window.location.href = '/login.html';
+        } else {
+            document.getElementById('userName').textContent = userName || 'Usuário';
+        }
+
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userName');
+                window.location.href = '/login.html';
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerHTML = message;
+            alertBox.className = 'alert alert-' + type;
+            alertBox.style.display = 'block';
+            setTimeout(() => alertBox.style.display = 'none', 5000);
+        }
+
+        function toggleErrorConsole() {
+            const body = document.getElementById('errorConsoleBody');
+            const toggle = document.querySelector('.error-console-toggle');
+            if (body.classList.contains('expanded')) {
+                body.classList.remove('expanded');
+                toggle.textContent = '▼ Expandir';
+            } else {
+                body.classList.add('expanded');
+                toggle.textContent = '▲ Ocultar';
+            }
+        }
+
+        function clearErrors(event) {
+            event.stopPropagation();
+            if (confirm('Limpar todos os erros do console?')) {
+                document.getElementById('errorConsoleBody').innerHTML = '';
+                document.getElementById('errorConsole').style.display = 'none';
+                errorCount = 0;
+                document.getElementById('errorCount').style.display = 'none';
+            }
+        }
+
+        function logError(errorType, errorMessage, technicalDetails, statusCode = null, endpoint = null) {
+            errorCount++;
+            const errorConsole = document.getElementById('errorConsole');
+            const errorConsoleBody = document.getElementById('errorConsoleBody');
+            const errorCountBadge = document.getElementById('errorCount');
+
+            errorConsole.style.display = 'block';
+            errorCountBadge.style.display = 'inline-block';
+            errorCountBadge.textContent = errorCount;
+
+            const timestamp = new Date().toLocaleString('pt-BR');
+            const errorItem = document.createElement('div');
+            errorItem.className = 'error-item';
+            errorItem.innerHTML = `
+                <div class="error-type">${errorType}${statusCode ? ` (HTTP ${statusCode})` : ''}${endpoint ? ` - Endpoint: ${endpoint}` : ''}</div>
+                <div class="error-message">${errorMessage}</div>
+                ${technicalDetails ? `<div class="error-details">${technicalDetails}</div>` : ''}
+                <div class="error-timestamp">🕐 ${timestamp}</div>
+            `;
+
+            errorConsoleBody.insertBefore(errorItem, errorConsoleBody.firstChild);
+
+            if (errorCount === 1) {
+                document.getElementById('errorConsoleBody').classList.add('expanded');
+                document.querySelector('.error-console-toggle').textContent = '▲ Ocultar';
+            }
+        }
+
+        function detectDatabaseError(errorText) {
+            for (const [code, error] of Object.entries(DB_ERRORS)) {
+                if (errorText.includes(code)) {
+                    return { code, ...error };
+                }
+            }
+            return null;
+        }
+
+        function handleError(error, response = null, data = null, endpoint = null) {
+            console.error('API Error:', error);
+
+            let errorType = 'Erro Desconhecido';
+            let errorMessage = 'Ocorreu um erro inesperado.';
+            let technicalDetails = null;
+            let statusCode = response?.status;
+
+            const errorText = JSON.stringify(data || error.message || '');
+            const dbError = detectDatabaseError(errorText);
+
+            if (dbError) {
+                errorType = `🗄️ ${dbError.type}`;
+                errorMessage = dbError.message;
+                technicalDetails = `Código Oracle: ${dbError.code}\n\nSolução: ${dbError.solution}\n\nDetalhes: ${errorText}`;
+                showAlert(`${dbError.message}<br><strong>💡 ${dbError.solution}</strong>`, 'error');
+            } else if (response) {
+                switch (response.status) {
+                    case 400:
+                        errorType = '❌ Requisição Inválida';
+                        errorMessage = data?.message || 'Dados inválidos.';
+                        technicalDetails = JSON.stringify(data, null, 2);
+                        showAlert(errorMessage, 'error');
+                        break;
+                    case 401:
+                        errorType = '🔒 Não Autorizado';
+                        errorMessage = 'Token inválido ou expirado. Faça login novamente.';
+                        technicalDetails = 'Sessão expirada. Redirecionando para login...';
+                        showAlert('❌ Sessão expirada. Redirecionando...', 'error');
+                        setTimeout(() => logout(), 2000);
+                        break;
+                    case 403:
+                        errorType = '🚫 Acesso Negado';
+                        errorMessage = 'Sem permissão para acessar este recurso.';
+                        technicalDetails = JSON.stringify(data, null, 2);
+                        showAlert('❌ Acesso negado.', 'error');
+                        break;
+                    case 404:
+                        errorType = '🔍 Endpoint Não Encontrado';
+                        errorMessage = 'Endpoint não existe ou API offline.';
+                        technicalDetails = `URL: ${API_BASE_URL}/api/${endpoint}`;
+                        showAlert('❌ Endpoint não encontrado.', 'error');
+                        break;
+                    case 500:
+                        errorType = '💥 Erro Interno do Servidor';
+                        errorMessage = 'Erro no servidor. Possível problema de banco de dados.';
+                        technicalDetails = JSON.stringify(data, null, 2);
+                        showAlert('❌ Erro no servidor. Verifique os logs.', 'error');
+                        break;
+                    case 502:
+                        errorType = '🌐 Bad Gateway';
+                        errorMessage = 'Gateway com problemas.';
+                        showAlert('❌ Problema de gateway.', 'error');
+                        break;
+                    case 503:
+                        errorType = '⚠️ Serviço Indisponível';
+                        errorMessage = 'Servidor indisponível ou em manutenção.';
+                        showAlert('❌ Serviço temporariamente indisponível.', 'error');
+                        break;
+                    case 504:
+                        errorType = '⏱️ Gateway Timeout';
+                        errorMessage = 'Servidor demorou muito para responder.';
+                        showAlert('❌ Tempo limite excedido.', 'error');
+                        break;
+                    default:
+                        errorType = `❓ Erro HTTP ${response.status}`;
+                        errorMessage = data?.message || 'Erro desconhecido do servidor.';
+                        technicalDetails = JSON.stringify(data, null, 2);
+                        showAlert(`❌ Erro ${response.status}`, 'error');
+                }
+            } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                errorType = '🌐 Erro de Rede';
+                errorMessage = 'Não foi possível conectar ao servidor.';
+                technicalDetails = `Erro: ${error.message}\nURL: ${API_BASE_URL}/api/${endpoint}`;
+                showAlert('❌ Erro de conexão. API pode estar offline.', 'error');
+            } else if (error.name === 'AbortError') {
+                errorType = '⏱️ Timeout';
+                errorMessage = 'Requisição cancelada por timeout.';
+                showAlert('❌ Tempo limite excedido.', 'error');
+            } else {
+                errorType = '❌ Erro JavaScript';
+                errorMessage = error.message || 'Erro desconhecido.';
+                technicalDetails = `${error.name}: ${error.message}\nStack: ${error.stack}`;
+                showAlert('❌ Erro inesperado.', 'error');
+            }
+
+            logError(errorType, errorMessage, technicalDetails, statusCode, endpoint);
+        }
+
+        async function testEndpoint(endpoint, responseId) {
+            const responseArea = document.getElementById(responseId);
+            const button = event.target;
+
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Carregando...';
+            responseArea.style.display = 'block';
+            responseArea.innerHTML = '<pre>Carregando...</pre>';
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                const response = await fetch(`${API_BASE_URL}/api/${endpoint}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    data = { message: 'Resposta inválida do servidor' };
+                }
+
+                if (response.ok) {
+                    responseArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    showAlert(`✅ Endpoint /${endpoint} retornou ${response.status}`, 'success');
+                } else {
+                    handleError(new Error(data.message || 'Request failed'), response, data, endpoint);
+                    responseArea.innerHTML = `<pre style="color: red;">Erro ${response.status}: ${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                handleError(error, null, null, endpoint);
+                responseArea.innerHTML = `<pre style="color: red;">Erro: ${error.message}</pre>`;
+            } finally {
+                button.disabled = false;
+                button.innerHTML = 'Testar Endpoint';
+            }
+        }
+
+        console.log('🏍️ API Mottu - Dashboard System');
+        console.log('API URL:', API_BASE_URL);
+        console.log('Token:', token ? 'Present' : 'Missing');
+        console.log('User:', userName);
+    </script>
+</body>
+</html>
