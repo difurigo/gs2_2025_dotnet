@@ -1,0 +1,14 @@
+bin/
+obj/
+*.db
+.vs/
+*.user
+*.swp
+*.suo
+*.csproj.user
+TestResults/
+/.vs
+/.idea
+*.sqlite
+*.sqlite3
+*.DS_Store
