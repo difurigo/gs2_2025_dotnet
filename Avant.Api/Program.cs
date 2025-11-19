@@ -13,18 +13,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = 
+        options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
 builder.Services.AddHealthChecks();
 
+// Versionamento
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
     options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true;
-    options.ApiVersionReader = new UrlSegmentApiVersionReader(); // lê da URL: /api/v1
+    options.ApiVersionReader = new UrlSegmentApiVersionReader(); // /api/v1
 })
 .AddApiExplorer(options =>
 {
@@ -32,6 +33,7 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
+// JWT
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"] ?? "ChaveSuperSecretaAvant2025!@#_MUUITO_GRANDE_123";
 var jwtIssuer = jwtSection["Issuer"] ?? "AvantApi";
@@ -57,9 +59,18 @@ builder.Services
         };
     });
 
-
+// DbContext: Oracle em runtime, InMemory nos testes
 builder.Services.AddDbContext<AvantDbContext>(options =>
-    options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (builder.Environment.IsEnvironment("Testing"))
+    {
+        options.UseInMemoryDatabase("AvantDbTests");
+    }
+    else
+    {
+        options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+});
 
 builder.Services.AddScoped<IServicoToken, ServicoToken>();
 
@@ -120,6 +131,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+// Logging + traceId
 app.Use(async (context, next) =>
 {
     var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
@@ -140,11 +152,14 @@ app.MapHealthChecks("/health");
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
+// Migrações só fora do ambiente de teste
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var context = scope.ServiceProvider.GetRequiredService<AvantDbContext>();
-
-    await context.Database.MigrateAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AvantDbContext>();
+        await context.Database.MigrateAsync();
+    }
 }
 
 app.Run();

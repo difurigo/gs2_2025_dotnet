@@ -205,5 +205,27 @@ namespace Avant.Api.Controllers
                 }
             });
         }
+
+        /// <summary>
+        /// Exclusão de funcionário (apenas gerente).
+        /// </summary>
+        [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Gerente")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> RemoverFuncionario(Guid id)
+        {
+            var funcionario = await _contexto.Usuarios
+                .FirstOrDefaultAsync(u => u.Id == id && u.Perfil == PerfilUsuario.Funcionario);
+
+            if (funcionario is null)
+                return NotFound("Funcionário não encontrado.");
+
+            _contexto.Usuarios.Remove(funcionario);
+            await _contexto.SaveChangesAsync();
+
+            return NoContent();
+        }
+
     }
 }
