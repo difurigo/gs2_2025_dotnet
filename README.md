@@ -92,6 +92,29 @@ options.ReportApiVersions = true;
 options.ApiVersionReader = new UrlSegmentApiVersionReader();
 ```
 
+### ML.NET – Recomendação de Plano de Carreira
+
+A solução utiliza **ML.NET** para demonstrar uma aplicação prática de aprendizado de máquina:
+
+- Classe de serviço: `PlanoCarreiraMlService`
+- Biblioteca: `Microsoft.ML` (via NuGet)
+- O modelo é treinado em memória com um pequeno conjunto de exemplos que representam perfis distintos de profissionais.
+- É utilizado um pipeline de regressão (`Sdca`) para gerar uma pontuação de recomendação de plano de carreira.
+
+Endpoint exposto na **v2** da API:
+
+- **POST** `/api/v2/Funcionarios/recomendacao-plano`
+- Request body (exemplo):
+
+  ```json
+  {
+    "idade": 25,
+    "anosExperiencia": 2,
+    "cursosConcluidos": 3,
+    "nivelAtual": 0,
+    "desejaTrabalhoRemoto": 1
+  }
+
 ---
 
 # **4. Integração e Persistência (30 pts)**
@@ -211,6 +234,34 @@ Avant.Api.Tests
 * `GET  /api/v1/Funcionarios/{id}`
 * `PUT  /api/v1/Funcionarios/{id}/plano-carreira`
 * `DELETE /api/v1/Funcionarios/{id}`
+
+---
+
+# Testes para os endpoints:
+
+Criar equipe:
+
+```json
+
+{
+  "nome": "Equipe 1"
+}
+
+```
+
+Criar Funcionário:
+
+```json
+
+{
+  "nome": "Roberto Farias",
+  "email": "roberto@email.com",
+  "senha": "Senha123#",
+  "planoCarreira": "TI",
+  "equipeId": "<idequipe>"
+}
+
+```
 
 ---
 

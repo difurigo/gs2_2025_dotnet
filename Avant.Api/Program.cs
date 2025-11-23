@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Avant.Api.Services;
+using Avant.Api.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,7 @@ builder.Services.AddApiVersioning(options =>
     options.DefaultApiVersion = new ApiVersion(1, 0);
     options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true;
-    options.ApiVersionReader = new UrlSegmentApiVersionReader(); // /api/v1
+    options.ApiVersionReader = new UrlSegmentApiVersionReader(); 
 })
 .AddApiExplorer(options =>
 {
@@ -59,7 +60,7 @@ builder.Services
         };
     });
 
-// DbContext: Oracle em runtime, InMemory nos testes
+// Banco de Dados (Oracle no runtime)
 builder.Services.AddDbContext<AvantDbContext>(options =>
 {
     if (builder.Environment.IsEnvironment("Testing"))
@@ -72,55 +73,33 @@ builder.Services.AddDbContext<AvantDbContext>(options =>
     }
 });
 
+// Serviços
 builder.Services.AddScoped<IServicoToken, ServicoToken>();
+builder.Services.AddSingleton<PlanoCarreiraMlService>();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "API Avant - Gestão de Equipes e Planos de Carreira",
-        Version = "v1",
-        Description = "API RESTful para cadastro, login e gestão de gerentes, funcionários, equipes e planos de carreira.",
-        Contact = new OpenApiContact
-        {
-            Name = "Equipe Avant",
-            Email = "contato@avant.com"
-        }
-    });
 
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header usando o esquema Bearer. Exemplo: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+// Swagger com múltiplas versões
+builder.Services.AddSwaggerGen();
+builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
 var app = builder.Build();
 
+// Swagger UI com múltiplas versões
 app.UseSwagger();
-app.UseSwaggerUI(c =>
+app.UseSwaggerUI(options =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API Avant v1");
-    c.RoutePrefix = "swagger";
+    var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+
+    foreach (var description in provider.ApiVersionDescriptions)
+    {
+        options.SwaggerEndpoint(
+            $"/swagger/{description.GroupName}/swagger.json",
+            $"API Avant {description.GroupName.ToUpperInvariant()}"
+        );
+    }
+
+    options.RoutePrefix = "swagger";
 });
 
 app.UseDefaultFiles();
@@ -152,7 +131,7 @@ app.MapHealthChecks("/health");
 
 app.MapControllers();
 
-// Migrações só fora do ambiente de teste
+// Migrações (fora do ambiente de teste)
 if (!app.Environment.IsEnvironment("Testing"))
 {
     using (var scope = app.Services.CreateScope())
