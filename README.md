@@ -276,7 +276,7 @@ Criar Funcionário:
 📁 **Repositório GitHub:**
 [https://github.com/difurigo/gs2_2025_dotnet.git]
 
-🔗 **Deploy (se houver):**
-*inserir se aplicável*
+🔗 **Deploy:**
+[https://avantapi-webapp.azurewebsites.net/swagger/index.html]
 
 ---
