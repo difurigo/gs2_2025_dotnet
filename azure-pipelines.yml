@@ -1,0 +1,55 @@
+trigger:
+  branches:
+    include:
+      - main   # Só builda quando commits chegam na main
+
+pr:
+  branches:
+    include:
+      - main   # Executa build em Pull Requests na main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET 9 SDK'
+    inputs:
+      version: '9.0.x'
+
+  - script: |
+      dotnet restore
+    displayName: 'Restore packages'
+
+  - script: |
+      dotnet build --configuration $(buildConfiguration) --no-restore
+    displayName: 'Build solution'
+
+  - script: |
+      dotnet test --configuration $(buildConfiguration) --no-build --logger trx
+    displayName: 'Run tests'
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/*.trx'
+      failTaskOnFailedTests: false
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish Artifacts'
+    inputs:
+      command: 'publish'
+      publishWebProjects: true
+      arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)'
+      zipAfterPublish: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Upload Artifacts'
+    inputs:
+      PathtoPublish: '$(build.artifactstagingdirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'

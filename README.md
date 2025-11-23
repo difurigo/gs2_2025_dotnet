@@ -1,6 +1,6 @@
 # **Avant API – Gestão de Equipes e Planos de Carreira**
 
-API RESTful desenvolvida em .NET 9 para o desafio **GS2 – Sprint 4**, representando uma solução tecnológica dentro do tema **“O Futuro do Trabalho”**.
+API RESTful desenvolvida em .NET 9 para o desafio **GS2**, representando uma solução tecnológica dentro do tema **“O Futuro do Trabalho”**.
 A API permite gerenciar **gerentes, funcionários, equipes** e **planos de carreira**, com autenticação JWT, versionamento, paginação e integração com banco Oracle.
 
 ---

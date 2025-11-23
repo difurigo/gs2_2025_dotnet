@@ -6,3 +6,4 @@
 *.suo
 *.log
 .claude/
+appsettings.Development.json
