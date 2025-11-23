@@ -267,7 +267,7 @@ Criar Funcionário:
 
 # **📹 Vídeo de Demonstração**
 
-📌 *Link será inserido pelo grupo antes da entrega final.*
+📌 [https://www.youtube.com/watch?v=YKWjNyH4TTM]
 
 ---
 
